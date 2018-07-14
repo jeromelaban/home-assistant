@@ -27,7 +27,7 @@ PACKAGES=(
   # homeassistant.components.homekit_controller
   libmpc-dev libmpfr-dev libgmp-dev
   # homeassistant.components.ffmpeg
-  ffmpeg
+  libav-tools 
   # homeassistant.components.sensor.iperf3
   iperf3
 )
