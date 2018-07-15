@@ -44,7 +44,7 @@ def populate_data():
     }
 
     SINGLE_INPUT_CLUSTER_DEVICE_CLASS.update({
-        zcl.clusters.general.OnOff: 'switch',
+        zcl.clusters.general.OnOff: 'binary_sensor',
         zcl.clusters.measurement.RelativeHumidity: 'sensor',
         zcl.clusters.measurement.TemperatureMeasurement: 'sensor',
         zcl.clusters.measurement.PressureMeasurement: 'sensor',
@@ -55,7 +55,7 @@ def populate_data():
         zcl.clusters.hvac.Fan: 'fan',
     })
     SINGLE_OUTPUT_CLUSTER_DEVICE_CLASS.update({
-        zcl.clusters.general.OnOff: 'binary_sensor',
+        zcl.clusters.general.OnOff: 'switch',
     })
 
     # A map of hass components to all Zigbee clusters it could use

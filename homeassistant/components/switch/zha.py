@@ -5,6 +5,7 @@ For more details on this platform, please refer to the documentation
 at https://home-assistant.io/components/switch.zha/
 """
 import logging
+import asyncio
 
 from homeassistant.components.switch import DOMAIN, SwitchDevice
 from homeassistant.components import zha
@@ -17,6 +18,7 @@ DEPENDENCIES = ['zha']
 async def async_setup_platform(hass, config, async_add_devices,
                                discovery_info=None):
     """Set up the Zigbee Home Automation switches."""
+    from zigpy.exceptions import DeliveryError
     discovery_info = zha.get_discovery_info(hass, discovery_info)
     if discovery_info is None:
         return
@@ -24,8 +26,18 @@ async def async_setup_platform(hass, config, async_add_devices,
     from zigpy.zcl.clusters.general import OnOff
     in_clusters = discovery_info['in_clusters']
     cluster = in_clusters[OnOff.cluster_id]
-    await cluster.bind()
-    await cluster.configure_reporting(0, 0, 600, 1,)
+
+    tries = 3
+    while tries != 0:
+        tries-=1
+        try:
+            await cluster.bind()
+            await cluster.configure_reporting(0, 0, 600, 1,)
+            break
+
+        except DeliveryError as ex:
+            _LOGGER.error("cluster.bind() failed: %s", ex)
+            await asyncio.sleep(1.0)
 
     async_add_devices([Switch(**discovery_info)], update_before_add=True)
 

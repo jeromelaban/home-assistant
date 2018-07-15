@@ -33,10 +33,10 @@ async def async_setup_platform(hass, config, async_add_devices,
 
     from zigpy.zcl.clusters.general import OnOff
     from zigpy.zcl.clusters.security import IasZone
-    if IasZone.cluster_id in discovery_info['in_clusters']:
+    if IasZone.cluster_id in discovery_info['out_clusters']:
         await _async_setup_iaszone(hass, config, async_add_devices,
                                    discovery_info)
-    elif OnOff.cluster_id in discovery_info['out_clusters']:
+    elif OnOff.cluster_id in discovery_info['in_clusters']:
         await _async_setup_remote(hass, config, async_add_devices,
                                   discovery_info)
 
@@ -45,7 +45,7 @@ async def _async_setup_iaszone(hass, config, async_add_devices,
                                discovery_info):
     device_class = None
     from zigpy.zcl.clusters.security import IasZone
-    cluster = discovery_info['in_clusters'][IasZone.cluster_id]
+    cluster = discovery_info['out_clusters'][IasZone.cluster_id]
     if discovery_info['new_join']:
         await cluster.bind()
         ieee = cluster.endpoint.device.application.ieee
@@ -74,13 +74,13 @@ async def _async_setup_remote(hass, config, async_add_devices, discovery_info):
 
     if discovery_info['new_join']:
         from zigpy.zcl.clusters.general import OnOff, LevelControl
-        out_clusters = discovery_info['out_clusters']
-        if OnOff.cluster_id in out_clusters:
-            cluster = out_clusters[OnOff.cluster_id]
+        in_clusters = discovery_info['in_clusters']
+        if OnOff.cluster_id in in_clusters:
+            cluster = in_clusters[OnOff.cluster_id]
             await safe(cluster.bind())
             await safe(cluster.configure_reporting(0, 0, 600, 1))
-        if LevelControl.cluster_id in out_clusters:
-            cluster = out_clusters[LevelControl.cluster_id]
+        if LevelControl.cluster_id in in_clusters:
+            cluster = in_clusters[LevelControl.cluster_id]
             await safe(cluster.bind())
             await safe(cluster.configure_reporting(0, 1, 600, 1))
 
@@ -98,7 +98,7 @@ class BinarySensor(zha.Entity, BinarySensorDevice):
         super().__init__(**kwargs)
         self._device_class = device_class
         from zigpy.zcl.clusters.security import IasZone
-        self._ias_zone_cluster = self._in_clusters[IasZone.cluster_id]
+        self._ias_zone_cluster = self._out_clusters[IasZone.cluster_id]
 
     @property
     def should_poll(self) -> bool:
@@ -206,7 +206,7 @@ class Switch(zha.Entity, BinarySensorDevice):
         self._state = False
         self._level = 0
         from zigpy.zcl.clusters import general
-        self._out_listeners = {
+        self._in_listeners = {
             general.OnOff.cluster_id: self.OnOffListener(self),
             general.LevelControl.cluster_id: self.LevelListener(self),
         }
@@ -254,5 +254,5 @@ class Switch(zha.Entity, BinarySensorDevice):
         """Retrieve latest state."""
         from zigpy.zcl.clusters.general import OnOff
         result = await zha.safe_read(
-            self._endpoint.out_clusters[OnOff.cluster_id], ['on_off'])
+            self._endpoint.in_clusters[OnOff.cluster_id], ['on_off'])
         self._state = result.get('on_off', self._state)

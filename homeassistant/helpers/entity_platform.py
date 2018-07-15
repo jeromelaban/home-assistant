@@ -11,7 +11,7 @@ from .event import async_track_time_interval, async_call_later
 from .entity_registry import async_get_registry
 
 SLOW_SETUP_WARNING = 10
-SLOW_SETUP_MAX_WAIT = 60
+SLOW_SETUP_MAX_WAIT = 240
 PLATFORM_NOT_READY_RETRIES = 10
 
 

@@ -215,6 +215,7 @@ class ApplicationListener:
                     'new_join': join,
                     'unique_id': device_key,
                 }
+                _LOGGER.info("Permitting joins for %ss", discovery_info)
                 discovery_info.update(discovered_info)
                 self._hass.data[DISCOVERY_KEY][device_key] = discovery_info
 
@@ -284,6 +285,8 @@ class ApplicationListener:
         discovery_info[discovery_attr] = {cluster.cluster_id: cluster}
         discovery_info.update(entity_info)
         self._hass.data[DISCOVERY_KEY][cluster_key] = discovery_info
+
+        _LOGGER.info("Permitting joins for %ss", discovery_info)
 
         await discovery.async_load_platform(
             self._hass,
